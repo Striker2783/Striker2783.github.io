@@ -1,0 +1,32 @@
+.top-bar {
+    background-color: #000000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px 10px;
+}
+
+.bar-main {
+    font-size: xxx-large;
+    padding-right: 50px;
+    a {
+        text-decoration: none;
+        color: #fff;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+}
+
+.options {
+    display: flex;
+    align-self: last baseline;
+    font-size: larger;
+    justify-content: center;
+    * {padding: 10px;}
+    a {
+        color: #fff;
+        text-decoration: none;
+    }
+}

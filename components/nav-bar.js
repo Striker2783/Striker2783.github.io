@@ -4,19 +4,13 @@ class NavigationBar extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     this.shadowRoot.innerHTML = `
-    <div class="top-bar">
-        <div class="bar-main">
-            <a href="">
-                Portfolio
-            </a>
-        </div>
-        <div class="options">
-            <a href="information">
-                Information
-            </a>
-            <a href="Contact">Contact</a>
-        </div>
-    </div>
+    <nav class="top-bar">
+        <ul class="nav">
+            <li> <a class="big-header" href="">Portfolio</a> </li>
+            <li> <a href="information">Information</a> </li>
+            <li> <a href="contact">Contact</a> </li>
+        </ul>
+    </nav>
     `;
     const linkElem = document.createElement("link");
     linkElem.setAttribute("rel", "stylesheet");

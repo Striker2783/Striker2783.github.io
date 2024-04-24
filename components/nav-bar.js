@@ -5,11 +5,7 @@ class NavigationBar extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
     <nav class="top-bar">
-        <ul class="nav">
-            <li> <a class="big-header" href="">Portfolio</a> </li>
-            <li> <a href="information">Information</a> </li>
-            <li> <a href="contact">Contact</a> </li>
-        </ul>
+        <a class="big-header header" href="">Striker2783's Portfolio</a>
     </nav>
     `;
     const linkElem = document.createElement("link");

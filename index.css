@@ -13,3 +13,9 @@ h1 {
 .project-list {
     padding-left: 10px;
 }
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #9de7fd;
+}

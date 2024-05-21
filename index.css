@@ -1,21 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+:root {
+  --primary-color: black;
+  --secondary-color: rgb(56, 56, 56);
+  --background-color: #9de7fd;
+  --link-color: blue;
+}
+a {
+  text-decoration: none;
+}
 h1 {
-	font-size: large;
+  font-size: large;
 }
 
-#content {
-    padding: 10px 10%;
-    line-height: 2em;
-    h1 {
-        font-size: xxx-large;
-    }
+main {
+  padding: 1rem 2em;
+  line-height: 2em;
+  h1 {
+    font-size: xxx-large;
+  }
 }
 
 .project-list {
-    padding-left: 10px;
+  padding-left: 1rem;
+  li a {
+    transition-duration: 2s;
+    color: var(--link-color);
+    display: block;
+    width: max-content;
+    &:hover {
+      font-size: 2em;
+      &::after {
+        width: 100%;
+      }
+    }
+    &::after {
+      background-color: var(--secondary-color);
+      height: 0.1em;
+      width: 0;
+      content: "";
+      display: block;
+      transition: 2s;
+    }
+  }
 }
 
 body {
-    padding: 0;
-    margin: 0;
-    background-color: #9de7fd;
+  padding: 0;
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--primary-color);
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  padding: 0.5em;
+  border-bottom: 0.2em solid var(--primary-color);
+  a {
+    color: var(--primary-color);
+  }
+}
+
+.big-header {
+  font-size: xxx-large;
+  text-align: center;
+  font-family: "Roboto", sans-serif;
 }

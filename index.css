@@ -16,6 +16,7 @@ h1 {
 }
 
 h2 {
+  font-size: x-large;
   text-decoration: underline;
   text-underline-offset: 13px;
 }

@@ -1,9 +1,5 @@
-# My Testing site that I have no idea what I'm doing.
+# My Portfolio Website
 
-## What does this site do?
+Link: https://striker2783.github.io/
 
-Nothing useful
-
-## Why bother?
-
-Because it is fun
+Just showcases a few things I have coded in no particular order.

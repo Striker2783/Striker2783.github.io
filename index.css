@@ -44,9 +44,6 @@ main {
   }
 }
 
-li {
-  padding-bottom: 1em;
-}
 
 a {
   color: var(--link-color);

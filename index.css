@@ -1,3 +1,4 @@
+/* Import Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 
 :root {
@@ -8,60 +9,14 @@
   --link-color: #e00000;
 }
 
-h1 {
-  font-size: xx-large;
-  text-decoration: underline;
-  text-underline-offset: 13px;
-  line-height: 1em;
-}
-
-h2 {
-  font-size: x-large;
-  text-decoration: underline;
-  text-underline-offset: 13px;
-}
-
-main {
-  padding: 1rem 2em;
-  line-height: 2em;
-
-  > h1 {
-    font-size: xxx-large;
-    text-align: center;
-  }
-}
-
-.project-list {
-  padding-left: 1rem;
-  font-size: x-large;
-
-  li > a {
-    width: max-content;
-
-    &:hover {
-      font-size: xx-large;
-    }
-  }
-}
-
-
-a {
-  color: var(--link-color);
-  transition-duration: 2s;
-
-  &:hover {
-    font-size: x-large;
-  }
-
-  text-decoration: none;
-}
-
+/* General Typography */
 body {
   padding: 0;
   margin: 0;
   background: var(--background-gradiant);
   color: var(--text-color);
-  font-size: large;
+  font-size: 1.6rem; /* Larger font size for better readability */
+  line-height: 1.5; /* Improved line height for easier reading */
 }
 
 nav {
@@ -69,18 +24,59 @@ nav {
   justify-content: center;
   padding: 0.5em;
   border-bottom: 0.2em solid var(--text-color);
-
-  a {
-    color: var(--text-color);
-
-    &:hover {
-      font-size: xxx-large;
-    }
-  }
 }
 
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  transition-duration: 0.3s; /* Smaller duration for smoother transitions */
+}
+
+a:hover {
+  color: var(--primary-color); /* Highlight link on hover */
+}
+
+/* Header Styles */
+h1, h2 {
+  font-size: x-large;
+  line-height: 1.25; /* Improved spacing between lines */
+  text-decoration: underline;
+  text-underline-offset: 3px; /* Smaller offset for better appearance */
+}
+
+h1 {
+  margin-bottom: 0.75em; /* Small margin to separate headers from content */
+}
+
+/* Main Content Section */
+main {
+  padding: 2rem 2em;
+  line-height: 1.6; /* Improved spacing between lines of text */
+  font-family: "Roboto", sans-serif;
+}
+
+main > h1 {
+  font-size: xx-large;
+  text-align: center;
+}
+
+/* Project List */
+.project-list {
+  padding-left: 1rem;
+  font-size: x-large;
+}
+
+.project-list li a {
+  width: max-content;
+}
+
+.project-list a:hover {
+  font-size: larger; /* Slightly increase font size on hover */
+}
+
+/* Big Header for special sections */
 .big-header {
-  font-size: xxx-large;
+  font-size: xx-large;
   text-align: center;
   font-family: "Roboto", sans-serif;
 }

@@ -6,7 +6,7 @@ class NavigationBar extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
     <nav>
-        <a class="big-header header" href="/">Striker2783's Portfolio</a>
+        <h1 class="big-header header" style="font-size: 4rem" href="/">Striker2783's Portfolio</h1>
     </nav>
     `;
   }

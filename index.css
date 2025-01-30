@@ -24,6 +24,12 @@ nav {
   justify-content: center;
   padding: 0.5em;
   border-bottom: 0.2em solid var(--text-color);
+  > h1 > a {
+    font-size: 3rem;
+    color: var(--text-color);
+    text-align: center;
+    font-family: "Roboto", sans-serif;
+  }
 }
 
 a {
@@ -37,7 +43,8 @@ a:hover {
 }
 
 /* Header Styles */
-h1, h2 {
+h1,
+h2 {
   font-size: x-large;
   line-height: 1.25; /* Improved spacing between lines */
   text-decoration: underline;
@@ -72,11 +79,4 @@ main > h1 {
 
 .project-list a:hover {
   font-size: larger; /* Slightly increase font size on hover */
-}
-
-/* Big Header for special sections */
-.big-header {
-  font-size: xx-large;
-  text-align: center;
-  font-family: "Roboto", sans-serif;
 }

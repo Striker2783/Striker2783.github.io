@@ -2,81 +2,74 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 
 :root {
-  --primary-color: #0078ff;
-  --accent-color: #003c8a;
-  --background-gradiant: linear-gradient(to right, #a7fcff, #85e4fc);
-  --text-color: #222222;
-  --link-color: #e00000;
+  --color-bg-primary: #f8f8f8;
+  --color-bg-secondary: #ededed;
+
+  --color-text-primary: #2c2c2c;
+  --color-text-secondary: #6a6a6a;
+
+  --color-accent: #000080;
+  --color-accent-hover: #006872;
 }
 
-/* General Typography */
 body {
   padding: 0;
   margin: 0;
-  background: var(--background-gradiant);
-  color: var(--text-color);
-  font-size: 1.6rem; /* Larger font size for better readability */
-  line-height: 1.5; /* Improved line height for easier reading */
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 1.6em;
+  line-height: 1.5;
 }
 
 nav {
   display: flex;
   justify-content: center;
-  padding: 0.5em;
-  border-bottom: 0.2em solid var(--text-color);
-  > h1 > a {
-    font-size: 3rem;
-    color: var(--text-color);
-    text-align: center;
-    font-family: "Roboto", sans-serif;
+  border-bottom: 0.2rem solid var(--color-text-primary);
+  > h1 {
+    > a {
+      font-size: 3rem;
+      color: var(--color-text-primary);
+      text-align: center;
+      font-family: "Roboto", sans-serif;
+    }
+    > a:hover {
+      font-size: 3.5rem;
+    }
   }
 }
 
 a {
-  color: var(--link-color);
+  color: var(--color-accent);
   text-decoration: none;
-  transition-duration: 0.3s; /* Smaller duration for smoother transitions */
+  transition-duration: 0.3s;
 }
 
 a:hover {
-  color: var(--primary-color); /* Highlight link on hover */
+  color: var(--color-accent-hover);
+  font-size: 1.8rem;
 }
 
-/* Header Styles */
-h1,
+li {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
 h2 {
-  font-size: x-large;
-  line-height: 1.25; /* Improved spacing between lines */
-  text-decoration: underline;
-  text-underline-offset: 3px; /* Smaller offset for better appearance */
+  font-size: 2rem;
+  line-height: 1;
+}
+
+b {
+  font-weight: 600;
 }
 
 h1 {
-  margin-bottom: 0.75em; /* Small margin to separate headers from content */
+  line-height: 1;
+  font-size: 2.5rem;
 }
 
-/* Main Content Section */
 main {
-  padding: 2rem 2em;
-  line-height: 1.6; /* Improved spacing between lines of text */
+  padding: 2rem 4rem;
+  line-height: 1.6;
   font-family: "Roboto", sans-serif;
-}
-
-main > h1 {
-  font-size: xx-large;
-  text-align: center;
-}
-
-/* Project List */
-.project-list {
-  padding-left: 1rem;
-  font-size: x-large;
-}
-
-.project-list li a {
-  width: max-content;
-}
-
-.project-list a:hover {
-  font-size: larger; /* Slightly increase font size on hover */
 }

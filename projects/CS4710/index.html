@@ -55,6 +55,56 @@
                     </li>
                 </ul>
             </section>
+            <section id="apriori">
+                <h1>Apriori</h1>
+                <p>The Apriori Algorithm is a fundamental method in the field of association rule mining, a branch of
+                    data mining focused on discovering relationships among variables in large datasets. Introduced by
+                    Agrawal and Srikant in 1994, it is designed to efficiently identify frequent itemsets and generate
+                    association rules in transactional databases. Association rules are typically expressed in the form
+                    "X implies Y," where X and Y are disjoint subsets of items. For example, in retail analytics, such
+                    rules can reveal that customers who buy bread and butter are likely to also buy milk.
+                </p>
+                <p>
+                    In the context of a transactional database, a transaction is defined as a set of items purchased
+                    together, and an itemset is any subset of items. The support of an itemset measures how frequently
+                    the itemset appears in the database, while the confidence of a rule quantifies the likelihood that a
+                    transaction containing X also contains Y. An additional metric, lift, can assess the strength of an
+                    association by comparing the observed frequency of X and Y occurring together to the frequency
+                    expected if they were independent. Lift values greater than one indicate a positive correlation
+                    between X and Y.
+                </p>
+                <p>
+                    The algorithm relies on the Apriori property, also known as the downward-closure property, which
+                    states that all subsets of a frequent itemset must themselves be frequent. This property allows the
+                    algorithm to prune the search space efficiently: any itemset containing an infrequent subset can be
+                    discarded from further consideration.
+                </p>
+                <p>
+                    The algorithm proceeds in several iterative steps. Initially, it identifies all frequent individual
+                    items that satisfy a minimum support threshold. These frequent items form the basis for generating
+                    larger candidate itemsets. In each subsequent iteration, candidate itemsets of size k are generated
+                    by combining frequent itemsets of size k - 1, and any candidate containing an infrequent subset is
+                    pruned. The database is scanned to count the occurrences of each candidate, and those meeting the
+                    minimum support requirement are retained as frequent itemsets. This iterative process continues
+                    until no new frequent itemsets can be generated.
+                </p>
+                <p>
+                    These candidate itemsets are stored in a data structure known as a Hash Tree. Each internal node of
+                    the Hash Tree has an array of pointers (possibly null) to either other internal nodes or leaf nodes.
+                    The leaf node contains a list of candidate itemsets and their support counts. When determining the
+                    support of all the candidate itemsets, the Hash Tree takes in one transaction at a time and does a
+                    recursive backtracking algorithm. At each internal node, it hashes each item in the transaction and
+                    finds the node corresponding to that item. It then calls the recursive function on it. When it
+                    reaches a leaf node, it increments the support of the itemset that was created by the items chosen.
+                </p>
+                <p>
+                    After all frequent itemsets have been identified, the algorithm generates association rules. For
+                    each frequent itemset, all possible non-empty subsets are considered, and rules are constructed by
+                    treating one subset as the antecedent and the remaining items as the consequent. Each rule is
+                    evaluated against a minimum confidence threshold, and only those that meet or exceed this threshold
+                    are retained as strong rules.
+                </p>
+            </section>
         </article>
     </main>
 </body>

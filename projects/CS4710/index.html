@@ -116,6 +116,17 @@
                     incremented and added to the transformed database. To filter for the frequent itemsets, loop through
                     the array and find which TIDs are frequent.</p>
             </section>
+            <section id="apriorihybrid">
+                <h1>AprioriHybrid</h1>
+                <p>The AprioriHybrid algorithm was also introduced by Agrawal and Srikant in the same paper. They
+                    analyzed the performance of Apriori and AprioriTID across passes and found Apriori to be faster at
+                    early passes and AprioriTID faster at later passes. AprioriHybrid combines them both. The first few
+                    passes are done by Apriori until a heuristic passes. The heuristic checks whether the transformed
+                    database can fit into memory and the number of candidate itemsets decreases. To determine the
+                    memory, sum the support of the previous passes and the number of candidate itemsets. If it passes,
+                    then the algorithm switches to AprioriTID by redoing the pass to generate the transformed database.
+                </p>
+            </section>
         </article>
     </main>
 </body>

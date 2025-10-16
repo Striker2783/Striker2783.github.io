@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Frequent Itemset Mining Algorithms</title>
+    <link rel="stylesheet" href="/index.css" />
+    <script src="/components/nav-bar.js"></script>
+</head>
+
+<body>
+    <nav-bar></nav-bar>
+    <main>
+        <h1>Frequent Itemset Mining Algorithms</h1>
+        <article>
+            <section>
+                <a href="https://github.com/Striker2783/data_mining/tree/master">Github Repository Link</a>
+                <br>
+                <a href="CS4710/paper.html">Multithreaded AprioriHybrid Paper</a>
+                <h1>Introduction</h1>
+                <p>This page shows a few algorithms for frequent itemset mining from a Introduction to Data Mining
+                    Course I took in Spring 2025. I only needed to implement one of them.</p>
+                <p>Frequent itemset mining is a process of identifying sets of items that appear frequently together in
+                    a dataset. For example, if I have a dataset of shopping transactions, I can find what items were
+                    commonly bought together. Using this data, I can find association rules that can be used to make
+                    predictions about future behavior. Association rules determines the probability of someone buying
+                    items based on what they bought previously. This is very useful in getting customers to buy more of
+                    your products.</p>
+            </section>
+            <section>
+                <h1>Key Points</h1>
+                <ul>
+                    <li>Implemented several algorithms efficiently in the high performance programming language Rust.
+                    </li>
+                    <li>Used a High Performance Computer using Singularity and SLURM</li>
+                    <li>
+                        Used OpenMPI to create multiple processes and transmit data between processes.
+                    </li>
+                    <li>
+                        Created and optimized a highly parallelized algorithm for performance and efficiency.
+                    </li>
+                    <li>
+                        Researched deeply into the field of frequent itemset mining.
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h1>Algorithms</h1>
+                <ul>
+                    <li>
+                        <a href="#apriori">Apriori</a>
+                    </li>
+                    <li>
+                        <a href="#aprioritid">AprioriTID</a>
+                    </li>
+                    <li>
+                        <a href="#apriorihybrid">AprioriHybrid</a>
+                    </li>
+                    <li>
+                        <a href="#multithreaded-apriori">Multithreaded Apriori</a>
+                    </li>
+                    <li>
+                        <a href="#multithreaded-apriorihybrid">Multithreaded AprioriHybrid</a>
+                    </li>
+                    <li>
+                        <a href="#fp-growth">FP Growth</a>
+                    </li>
+                    <li>
+                        <a href="#max-miner">Max Miner</a>
+                    </li>
+                    <li>
+                        <a href="apriori-trie">Apriori with a Trie</a>
+                    </li>
+                </ul>
+            </section>
+            <section id="apriori">
+                <h1>Apriori</h1>
+                <p>The Apriori Algorithm is a fundamental method in the field of association rule mining, a branch of
+                    data mining focused on discovering relationships among variables in large datasets. Introduced by
+                    Agrawal and Srikant in 1994 titled "Fast Algorithms for Mining Association Rules in Large
+                    Databases", it is designed to efficiently identify frequent itemsets and generate
+                    association rules in transactional databases.
+                </p>
+                <p>
+                    The algorithm relies on the Apriori property, also known as the downward-closure property, which
+                    states that all subsets of a frequent itemset must themselves be frequent. This property allows the
+                    algorithm to prune the search space efficiently: any itemset containing an infrequent subset can be
+                    discarded from further consideration.
+                </p>
+                <p>
+                    The algorithm proceeds in several iterative steps. Initially, it identifies all frequent individual
+                    items that satisfy a minimum support threshold. These frequent items form the basis for generating
+                    larger candidate itemsets. In each subsequent iteration, candidate itemsets of size k are generated
+                    by combining frequent itemsets of size k - 1, and any candidate containing an infrequent subset is
+                    pruned. The database is scanned to count the occurrences of each candidate, and those meeting the
+                    minimum support requirement are retained as frequent itemsets. This iterative process continues
+                    until no new frequent itemsets can be generated.
+                </p>
+                <p>
+                    These candidate itemsets are stored in a data structure known as a hash tree. Each internal node of
+                    the hash tree has an array of pointers (possibly null) to either other internal nodes or leaf nodes.
+                    The leaf node contains a list of candidate itemsets and their support counts. When determining the
+                    support of all the candidate itemsets, the hash tree takes in one transaction at a time and does a
+                    recursive backtracking algorithm. At each internal node, it hashes each item in the transaction and
+                    finds the node corresponding to that item. It then calls the recursive function on it. When it
+                    reaches a leaf node, it increments the support of the itemset that was created by the items chosen.
+                </p>
+                <p>
+                    After all frequent itemsets have been identified, the algorithm generates association rules. For
+                    each frequent itemset, all possible non-empty subsets are considered, and rules are constructed by
+                    treating one subset as the antecedent and the remaining items as the consequent. Each rule is
+                    evaluated against a minimum confidence threshold, and only those that meet or exceed this threshold
+                    are retained as strong rules.
+                </p>
+            </section>
+            <section id="aprioritid">
+                <h1>AprioriTID</h1>
+                <p>The AprioriTID algorithm was also introduced by Agrawal and Srikant in the same paper as Apriori. The
+                    iterative process is the same, but they used a different data structure to store candidates and the
+                    database to increase performance.</p>
+                <p>The data structure to store the candidate itemset is an array of objects containing details about the
+                    candidate itemsets. Each element in the
+                    array corresponds to a candidate itemset. The index into the array corresponding
+                    to the candidate itemset is called the transaction identifier (TID). The generator field of the
+                    object are the TIDs that are joined to get the current TID. The extension field are the TIDs that
+                    were generated by the current TID. The support field is the support count of the candidate itemset
+                    in the database. The transformed database is a list of transactions with each item in the
+                    transaction being a TID.
+                </p>
+                <p>At the first pass, the array is populated and the original database is transformed, and frequent
+                    items are found. At subsequent passes, new candidate itemsets are formed and populates the array.
+                    The support of each itemset is found by looping through each transaction. At each transaction, the
+                    TIDs' extensions are checked, and if both the extensions' generators are in the transaction, it is
+                    incremented and added to the transformed database. To filter for the frequent itemsets, loop through
+                    the array and find which TIDs are frequent.</p>
+            </section>
+            <section id="apriorihybrid">
+                <h1>AprioriHybrid</h1>
+                <p>The AprioriHybrid algorithm was also introduced by Agrawal and Srikant in the same paper. They
+                    analyzed the performance of Apriori and AprioriTID across passes and found Apriori to be faster at
+                    early passes and AprioriTID faster at later passes. AprioriHybrid combines them both. The first few
+                    passes are done by Apriori until a heuristic passes. The heuristic checks whether the transformed
+                    database can fit into memory and the number of candidate itemsets decreases. To determine the
+                    memory, sum the support of the previous passes and the number of candidate itemsets. If it passes,
+                    then the algorithm switches to AprioriTID by redoing the pass to generate the transformed database.
+                </p>
+            </section>
+            <section id="multithreaded-apriori">
+                <h1>Multithreaded Apriori</h1>
+                <p>A multithreaded version of Apriori I created by splitting the database into partitions and sharing it
+                    across threads. Each thread gets all the candidate itemsets, finds their support in the partition,
+                    and returns it back to be consolidated.</p>
+            </section>
+            <section id="multithreaded-apriorihybrid">
+                <h1>Multithreaded AprioriHybrid</h1>
+                <p>A multithreaded version of AprioriHybrid that I created through the same process as Multithreaded
+                    Apriori.</p>
+            </section>
+            <section id="fp-growth">
+                <h1>FP-Growth</h1>
+                <p>
+                    FP-Growth is an algorithm introduced by Jiawei Han, Jian Pei, and Yiwen Yin in "Mining Frequent
+                    Patterns without Candidate Generation". Unlike the Apriori algorithm, which generates candidate
+                    itemsets and repeatedly scans the database, FP-Growth avoids this costly step by using a compact
+                    data structure called an FP-tree. This makes FP-Growth particularly efficient for dense datasets
+                    where many items frequently co-occur. The algorithm works by first scanning the database to identify
+                    frequent items based on a minimum support threshold. Infrequent items are discarded, and the
+                    remaining items in each transaction are sorted in descending order of frequency to maximize prefix
+                    sharing in the tree.
+                </p>
+                <p>
+                    Once the items are sorted, each transaction is inserted into the FP-tree, a structure where each
+                    node represents an item and stores a count of how many transactions share that path. Transactions
+                    that share common prefixes share nodes in the tree, which compresses the data and allows the
+                    algorithm to represent the entire dataset in a highly compact form. The FP-tree captures all the
+                    necessary information about frequent items without explicitly storing every transaction multiple
+                    times. This tree-based representation is key to the efficiency of the FP-Growth algorithm.
+                </p>
+                <p>
+                    Mining the FP-tree is done recursively using a divide-and-conquer strategy. The algorithm starts
+                    with the least frequent item, treating it as a base pattern, and finds all paths in the FP-tree that
+                    lead to that item, forming its conditional pattern base. From these paths, a conditional FP-tree is
+                    constructed, representing the subset of the database relevant to the base pattern. This conditional
+                    tree is then mined recursively to generate larger frequent itemsets. By combining base patterns with
+                    patterns found in their conditional trees, the algorithm efficiently produces all frequent itemsets
+                    without generating candidate sets explicitly.
+                </p>
+                <p>
+                    The FP-Growth algorithm offers significant advantages over Apriori, primarily because it reduces the
+                    number of database scans to typically just two and avoids the combinatorial explosion of candidate
+                    generation. However, it has limitations: constructing the FP-tree can consume significant memory,
+                    especially for very large datasets, and mining conditional trees can be complex. Despite these
+                    challenges, FP-Growth remains one of the most effective algorithms for frequent itemset mining,
+                    particularly in applications such as market basket analysis, recommendation systems, and any domain
+                    where discovering co-occurring items efficiently is crucial.
+                </p>
+            </section>
+            <section id="max-miner">
+                <h1>Max Miner</h1>
+                <p>The MaxMiner algorithm was introduced by Roberto J. Bayardo Jr. in "Efficiently Mining Long Patterns
+                    from Databases". It is a method used in data mining to find maximal frequent itemsets in
+                    transactional databases. A maximal frequent itemset is a frequent itemset that is not a subset of
+                    any larger frequent itemset. By focusing only on maximal frequent itemsets, MaxMiner can reduce the
+                    number of patterns reported, which is useful for large datasets where enumerating all frequent
+                    itemsets would be overwhelming. This approach helps uncover meaningful patterns while minimizing
+                    redundancy in the results.</p>
+                <p>
+                    MaxMiner works by combining a set-enumeration tree approach with pruning strategies to efficiently
+                    explore the search space. It traverses the lattice of all possible itemsets, but unlike traditional
+                    Apriori-like methods, it uses look-ahead pruning to avoid exploring branches of the search space
+                    that cannot contain maximal frequent itemsets. Specifically, if a candidate itemset or any of its
+                    supersets is determined to be infrequent, the algorithm prunes that branch entirely. This reduces
+                    the number of database scans and computational overhead compared to exhaustive approaches.
+                </p>
+                <p>
+                    The algorithm also applies dynamic reordering of items during traversal. By ordering items based on
+                    their frequency and other heuristics, MaxMiner can explore promising branches first, increasing the
+                    chance of quickly identifying maximal itemsets and enabling early pruning of less promising
+                    branches. Once a maximal frequent itemset is found, all its subsets are automatically known to be
+                    frequent, so the algorithm does not need to report them individually, further reducing output size.
+                </p>
+                <p>
+                    MaxMiner is particularly effective when the dataset contains long frequent itemsets, as it avoids
+                    enumerating all subsets, which can be extremely large in such cases. However, it can be less
+                    efficient for very sparse datasets or when there are many maximal itemsets because the search tree
+                    can still become large. Despite these limitations, MaxMiner is a powerful tool for scenarios where
+                    identifying the largest frequent patterns is more useful than generating all frequent itemsets, such
+                    as market basket analysis, bioinformatics, or web usage mining.
+                </p>
+            </section>
+            <section id="apriori-trie">
+                <h1>Apriori with a Trie</h1>
+                <p>
+                    This algorithm uses the same methods as Apriori, but instead uses a trie instead of a hash tree. A
+                    trie offers the key advantage of O(1) lookup in its leaf nodes, while the hash tree has O(n) lookup
+                    in its leaf nodes. This makes the trie significantly faster where there are many candidates per leaf
+                    node.
+                </p>
+            </section>
+        </article>
+    </main>
+</body>
+
+</html>

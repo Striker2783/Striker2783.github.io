@@ -142,6 +142,16 @@
                     then the algorithm switches to AprioriTID by redoing the pass to generate the transformed database.
                 </p>
             </section>
+            <section id="#multithreaded-apriori">
+                <h1>Multithreaded Apriori</h1>
+                <p>A multithreaded version of Apriori I created by splitting the database into partitions and sharing it
+                    across threads. Each thread gets all the candidate itemsets, finds their support in the partition,
+                    and returns it back to be consolidated.</p>
+            </section>
+            <section id="#multithreaded-apriorihybrid">
+                <h1>Multithreaded AprioriHybrid</h1>
+                <p>A multithreaded version of AprioriHybrid that I created through the same process as Multithreaded Apriori.</p>
+            </section>
         </article>
     </main>
 </body>

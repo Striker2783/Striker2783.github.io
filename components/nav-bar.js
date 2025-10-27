@@ -8,7 +8,7 @@ class NavigationBar extends HTMLElement {
     <nav>
     <h1>
       <a href="/">
-        Striker2783's Portfolio
+        Owen Kemp's Portfolio
       </a>
     </h1>
   </nav>`;

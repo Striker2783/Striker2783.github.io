@@ -1,300 +1,300 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>CS 4710 Final Report</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-		<script src="main.js"></script>
-		<link
-			href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css"
-			rel="stylesheet"
-		/>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-rust.min.js"></script>
-	</head>
-	<body>
-		<h1 align="center">Multithreaded AprioriHybrid</h1>
-		<h2 align="center" style="color: #2b2b2b">Owen Kemp</h2>
-		<article>
-			<section class="toc">
-				<h1>Table of Contents</h1>
-				<ul>
-					<li>
-						<a href="#Introduction">Introduction</a>
-					</li>
-					<li>
-						<a href="#Description">Description</a>
-					</li>
-					<li>
-						<a href="#Implementation">Implementation Details</a>
-					</li>
-					<li>
-						<a href="#Dataset">Dataset</a>
-					</li>
-					<li>
-						<a href="#Results">Results</a>
-					</li>
-					<li>
-						<a href="#Discussion">Discussion</a>
-					</li>
-					<li>
-						<a href="#src">Source code</a>
-					</li>
-				</ul>
-			</section>
-			<section id="Introduction">
-				<h1>Introduction</h1>
-				<p>
-					Frequent itemset mining finds the item sets in a database of
-					transactions (a list of items) that are frequent. This means that the
-					item set is contained in at least some number of transactions. These
-					frequent item sets can be used to find association rules among the
-					set. For example, if a person buys cereal, then they have a 20% chance
-					of also buying milk. This can be very useful for marketing.
-					AprioriHybrid was introduced by Rakesh Agrawal and Ramakrishnan
-					Srikant in “Fast Algorithms for Mining Association Rules.” The
-					algorithm I implemented multithreads AprioriHybrid for one processor
-					with multiple cores.
-				</p>
-			</section>
-			<section id="Description">
-				<h1>Description</h1>
-				<p>
-					Apriori-Hybrid is an algorithm that initially uses Apriori to find
-					frequent item sets for a transactional database, then it switches to
-					using Apriori-TID for faster performance.
-				</p>
-				<p>
-					Apriori starts with counting the number of times each item is in the
-					database. It filters those items based on whether the item count is
-					greater than the minimum support to find the frequent items. Then, it
-					generates candidate steps by joining together two frequent itemsets or
-					items for the first pass with the same prefix and prunes them based on
-					whether its subsets are also frequent. After, it passes through the
-					database, counts those item sets, and filters for frequent item sets.
-					If no frequent item sets remain, then the algorithm stops. Otherwise,
-					we repeat generating candidate item sets and filtering for frequent
-					item sets.
-				</p>
-				<p>
-					Apriori-TID uses a transaction identifier (TID) for each transaction
-					that contains a set of item sets. It first starts with transforming
-					the original transactions into transaction identifiers that contain
-					sets of one item. For each pass of the TIDs, it increments the count
-					for the item sets in the TIDs and adds that item set to the next TID
-					set. This could be done by checking if all its subsets are within the
-					TID set. After all those counts are done, we filter for frequent item
-					sets and generate candidate item sets similar to Apriori.
-				</p>
-				<p>
-					Multithreaded Apriori-Hybrid works by partitioning the database and
-					giving each thread a partition. Each thread will also receive frequent
-					item sets to be used for generating candidate item sets. It then uses
-					Apriori-Hybrid to count the candidate item sets on its partition and
-					sends it back to some main thread. The main thread then filters for
-					frequent item sets and sends them to each thread. This repeats until
-					no new frequent item sets are created.
-				</p>
-			</section>
-			<section id="Implementation">
-				<h1>Implementation Details</h1>
-				<h2>Apriori</h2>
-				<p>
-					For the first pass, each item count is stored in an array of integers.
-					For each transaction, we increment the items in the array. We filter
-					through those counts and find the ones greater than minimum support to
-					get the frequent items. For the second pass, I used a lower triangular
-					matrix stored as a 1D array with length
-					<span class="math-inline">n × (n - 1) / 2 - n</span>, where n is the
-					number of items in the transaction set. The index value for (a, b)
-					where a < b is <span class="math-inline">a * (a - 1) / 2 + b</span>.
-					When counting, I index into the matrix and increment the corresponding
-					count for each two-item set in the transaction. After the counting, I
-					filter each two-item set to find the frequent two-item sets.
-				</p>
-				<p>
-					For the join step, I have a map that has indices of the prefixes (all
-					the items except the last) of all the frequent item sets. The values
-					are an array of the last items. I loop through each entry in the map,
-					and loop through each 2-combination of the value to join them together
-					into a candidate item set by taking the prefix array and pushing the
-					small then large item. During this step, I also prune by checking that
-					every k-1-subset including the last two items are also frequent. These
-					candidate item sets are stored in a hash tree.
-				</p>
-				<p>
-					The hash tree is a tree data structure that contains an array of its
-					children. When indexing with an array, I hash the corresponding
-					element and use that hash to find its corresponding index into that
-					array to get its child. When all the elements have been hashed and
-					indexed into, we are left with a leaf node that contains an array of
-					candidate item sets and counts.
-				</p>
-				<p>
-					When counting for each transaction, I count through trying each
-					possible combination in the transaction. This is done by finding all
-					k-combinations in the transaction and trying to increment each
-					combination in the hash tree. After the pass, we filter all the
-					candidate item sets to find the frequent item sets. If no frequent
-					item sets are found, then the algorithm ends.
-				</p>
-				<h2>AprioriTID</h2>
-				<p>
-					I assume we have frequent k-item sets found in Apriori for this
-					algorithm because of the hybrid approach. We first generate the next
-					candidate item sets based on Apriori’s joining and pruning step
-					described above. Then we count based on Apriori’s counting. If a
-					candidate item set is incremented, then add that item set to a set
-					corresponding to that transaction called the transaction ID. At the
-					end, I have an array of transaction IDs corresponding to the
-					transaction dataset. We remove any empty transaction IDs. We filter
-					the candidate item sets to generate the frequent item sets.
-				</p>
-				<p>
-					For any pass after, we generate the candidate item sets based on the
-					frequent item sets from Apriori’s method. When we count, instead of
-					using the transaction, we use the transaction ID. Instead of looping
-					through each candidate itemset and finding whether all its subsets are
-					in the TID, I used the join step to get item sets in that transaction
-					and incrementing the corresponding candidate item set. If we
-					incremented that candidate item set, then we add it to the next
-					transaction ID. We filter all the candidate item sets to get all the
-					frequent item sets. If no frequent item sets are found, then the
-					algorithm ends.
-				</p>
-			</section>
-			<section id="Dataset">
-				<h1>Dataset</h1>
-				<p>
-					I used a synthetic dataset T10I4D100K found on the
-					<a href="http://fimi.uantwerpen.be/data/"
-						>Frequent Itemset Mining Dataset Repository</a
-					>. This dataset includes 100,000 transactions with an average size of
-					10 items. The average size of maximal potential frequent item sets is
-					4.
-				</p>
-			</section>
-			<section id="Results">
-				<h1>Results</h1>
-				<img src="public/paper_graph.png" />
-				<p>
-					This graph shows that AprioriHybrid scales better than Apriori, and
-					multithreaded AprioriHybrid version is some multiple times faster than
-					AprioriHybrid. This factor is less than 8 due to the time spent on the
-					main thread instead of multiple threads. The multithreaded version is
-					slower at smaller scales due to how I combine the counts in the main
-					thread. I found five frequent itemsets of length 10 at a minimum
-					support count of 0.05%. They are:
-				</p>
-				<ul>
-					<li>126 158 193 214 332 561 682 833 843 998</li>
-					<li>8 71 75 108 242 438 486 684 766 958</li>
-					<li>42 147 196 269 464 515 820 823 922 975</li>
-					<li>75 205 207 285 403 461 529 829 896 950</li>
-					<li>116 381 492 523 632 706 777 778 865 893</li>
-				</ul>
-			</section>
-			<section id="Discussion">
-				<h1>Discussion</h1>
-				<p>
-					My AprioriHybrid implementation scales better than my Apriori
-					implementation as shown in the results section. This is due to not
-					having to count each combination in the transaction for AprioriTID,
-					which grows combinatorically large. The multithreaded version suffers
-					from having to combine the counts of candidate item sets and needing a
-					main thread to do that. This means that the main thread takes up
-					almost half the computing time, which would not be solved by adding
-					more threads. My implementation also requires a parameter to define
-					when it should switch to using AprioriTID. This means the user would
-					have to determine the best pass to switch to get the most performance.
-					A potential fix is to use heuristics to determine when to switch.
-					Following that idea, I could use heuristics to figure out which
-					transactions could switch to TID and which transactions should stay to
-					using Apriori.
-				</p>
-				<p>
-					Another performance hit is the use of a hash tree for counting,
-					especially in lower passes. The hash tree is very small at lower
-					passes, causing the leaf nodes to contain too many candidate item
-					sets. This leads to many expensive array comparisons. A potential fix
-					is to use a trie to store the counts, taking advantage of the fast
-					indexing and no array comparisons. Another problem is the large amount
-					of memory the TIDs take up. There are not any major fixes I can think
-					of except to use a more efficient data structure than a hash set. A
-					bottleneck can occur when some threads are idle and other threads are
-					still counting can occur due to the partitioning. A potential fix is
-					to use a thread pool where each thread picks the next transaction to
-					count and continues doing that. The other bottleneck is the main
-					thread combining all the item set counts and filtering them. Lastly,
-					the counting of every candidate item set causes Apriori-like
-					algorithms to be slow on low passes like 3 and 4. My implementation
-					spends half the time doing pass 3 for a support count of 0.05%.
-				</p>
-				<p>
-					One future plan is to parallelize this algorithm, so that it could
-					work with multiple processors. This allows it to run on bigger
-					machines that could run the algorithm much faster than with one
-					processor. One part of the algorithm I would need to change is the
-					work the main processor does. Another plan could be to use a prefix
-					tree, or trie, to do the counting instead of a hash tree. "A fast
-					APRIORI implementation" by Ferenc Bodon shows how that would be
-					implemented.
-				</p>
-			</section>
-			<section id="src">
-				<h1>Source Code</h1>
-				<section class="toc">
-					<h2>Table of Contents</h2>
-					<ul>
-						<li>
-							<a href="#transaction-set">Transaction Set</a>
-						</li>
-						<li>
-							<a href="#candidates">Candidates</a>
-						</li>
-						<li>
-							<a href="#hashtree">Hash Tree</a>
-						</li>
-						<li>
-							<a href="#2darray">2D Array</a>
-						</li>
-						<li>
-							<a href="#join">Join</a>
-						</li>
-						<li>
-							<a href="#nestedloops">Nested Loops</a>
-						</li>
-						<li>
-							<a href="#apriori">Apriori</a>
-						</li>
-						<li>
-							<a href="#tids">Transaction TIDs</a>
-						</li>
-						<li>
-							<a href="#aprioritid">AprioriTID</a>
-						</li>
-						<li>
-							<a href="#multithread-apriorihybrid"
-								>Mulithreaded AprioriHybrid</a
-							>
-						</li>
-						<li>
-							<a href="#thread-apriorihybrid">Thread of AprioriHybrid</a>
-						</li>
-					</ul>
-				</section>
-				<p>
-					I wrote a lot of source code for this project using only the standard
-					library and a command line parsing library for the commands. This is
-					all implemented in the Rust language. The GitHub repository is
-					<a href="https://github.com/Striker2783/data_mining/tree/presentation"
-						>https://github.com/Striker2783/data_mining/tree/presentation</a
-					>.
-				</p>
-				<h2 id="transaction-set">Transaction Set</h2>
-				<pre><code class="language-rust">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>CS 4710 Final Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-rust.min.js"></script>
+  </head>
+  <body>
+    <h1 align="center">Multithreaded AprioriHybrid</h1>
+    <h2 align="center" style="color: #2b2b2b">Owen Kemp</h2>
+    <article>
+      <section class="toc">
+        <h1>Table of Contents</h1>
+        <ul>
+          <li>
+            <a href="#Introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#Description">Description</a>
+          </li>
+          <li>
+            <a href="#Implementation">Implementation Details</a>
+          </li>
+          <li>
+            <a href="#Dataset">Dataset</a>
+          </li>
+          <li>
+            <a href="#Results">Results</a>
+          </li>
+          <li>
+            <a href="#Discussion">Discussion</a>
+          </li>
+          <li>
+            <a href="#src">Source code</a>
+          </li>
+        </ul>
+      </section>
+      <section id="Introduction">
+        <h1>Introduction</h1>
+        <p>
+          Frequent itemset mining finds the item sets in a database of
+          transactions (a list of items) that are frequent. This means that the
+          item set is contained in at least some number of transactions. These
+          frequent item sets can be used to find association rules among the
+          set. For example, if a person buys cereal, then they have a 20% chance
+          of also buying milk. This can be very useful for marketing.
+          AprioriHybrid was introduced by Rakesh Agrawal and Ramakrishnan
+          Srikant in “Fast Algorithms for Mining Association Rules.” The
+          algorithm I implemented multithreads AprioriHybrid for one processor
+          with multiple cores.
+        </p>
+      </section>
+      <section id="Description">
+        <h1>Description</h1>
+        <p>
+          Apriori-Hybrid is an algorithm that initially uses Apriori to find
+          frequent item sets for a transactional database, then it switches to
+          using Apriori-TID for faster performance.
+        </p>
+        <p>
+          Apriori starts with counting the number of times each item is in the
+          database. It filters those items based on whether the item count is
+          greater than the minimum support to find the frequent items. Then, it
+          generates candidate steps by joining together two frequent itemsets or
+          items for the first pass with the same prefix and prunes them based on
+          whether its subsets are also frequent. After, it passes through the
+          database, counts those item sets, and filters for frequent item sets.
+          If no frequent item sets remain, then the algorithm stops. Otherwise,
+          we repeat generating candidate item sets and filtering for frequent
+          item sets.
+        </p>
+        <p>
+          Apriori-TID uses a transaction identifier (TID) for each transaction
+          that contains a set of item sets. It first starts with transforming
+          the original transactions into transaction identifiers that contain
+          sets of one item. For each pass of the TIDs, it increments the count
+          for the item sets in the TIDs and adds that item set to the next TID
+          set. This could be done by checking if all its subsets are within the
+          TID set. After all those counts are done, we filter for frequent item
+          sets and generate candidate item sets similar to Apriori.
+        </p>
+        <p>
+          Multithreaded Apriori-Hybrid works by partitioning the database and
+          giving each thread a partition. Each thread will also receive frequent
+          item sets to be used for generating candidate item sets. It then uses
+          Apriori-Hybrid to count the candidate item sets on its partition and
+          sends it back to some main thread. The main thread then filters for
+          frequent item sets and sends them to each thread. This repeats until
+          no new frequent item sets are created.
+        </p>
+      </section>
+      <section id="Implementation">
+        <h1>Implementation Details</h1>
+        <h2>Apriori</h2>
+        <p>
+          For the first pass, each item count is stored in an array of integers.
+          For each transaction, we increment the items in the array. We filter
+          through those counts and find the ones greater than minimum support to
+          get the frequent items. For the second pass, I used a lower triangular
+          matrix stored as a 1D array with length
+          <span class="math-inline">n × (n - 1) / 2 - n</span>, where n is the
+          number of items in the transaction set. The index value for (a, b)
+          where a < b is <span class="math-inline">a * (a - 1) / 2 + b</span>.
+          When counting, I index into the matrix and increment the corresponding
+          count for each two-item set in the transaction. After the counting, I
+          filter each two-item set to find the frequent two-item sets.
+        </p>
+        <p>
+          For the join step, I have a map that has indices of the prefixes (all
+          the items except the last) of all the frequent item sets. The values
+          are an array of the last items. I loop through each entry in the map,
+          and loop through each 2-combination of the value to join them together
+          into a candidate item set by taking the prefix array and pushing the
+          small then large item. During this step, I also prune by checking that
+          every k-1-subset including the last two items are also frequent. These
+          candidate item sets are stored in a hash tree.
+        </p>
+        <p>
+          The hash tree is a tree data structure that contains an array of its
+          children. When indexing with an array, I hash the corresponding
+          element and use that hash to find its corresponding index into that
+          array to get its child. When all the elements have been hashed and
+          indexed into, we are left with a leaf node that contains an array of
+          candidate item sets and counts.
+        </p>
+        <p>
+          When counting for each transaction, I count through trying each
+          possible combination in the transaction. This is done by finding all
+          k-combinations in the transaction and trying to increment each
+          combination in the hash tree. After the pass, we filter all the
+          candidate item sets to find the frequent item sets. If no frequent
+          item sets are found, then the algorithm ends.
+        </p>
+        <h2>AprioriTID</h2>
+        <p>
+          I assume we have frequent k-item sets found in Apriori for this
+          algorithm because of the hybrid approach. We first generate the next
+          candidate item sets based on Apriori’s joining and pruning step
+          described above. Then we count based on Apriori’s counting. If a
+          candidate item set is incremented, then add that item set to a set
+          corresponding to that transaction called the transaction ID. At the
+          end, I have an array of transaction IDs corresponding to the
+          transaction dataset. We remove any empty transaction IDs. We filter
+          the candidate item sets to generate the frequent item sets.
+        </p>
+        <p>
+          For any pass after, we generate the candidate item sets based on the
+          frequent item sets from Apriori’s method. When we count, instead of
+          using the transaction, we use the transaction ID. Instead of looping
+          through each candidate itemset and finding whether all its subsets are
+          in the TID, I used the join step to get item sets in that transaction
+          and incrementing the corresponding candidate item set. If we
+          incremented that candidate item set, then we add it to the next
+          transaction ID. We filter all the candidate item sets to get all the
+          frequent item sets. If no frequent item sets are found, then the
+          algorithm ends.
+        </p>
+      </section>
+      <section id="Dataset">
+        <h1>Dataset</h1>
+        <p>
+          I used a synthetic dataset T10I4D100K found on the
+          <a href="http://fimi.uantwerpen.be/data/"
+            >Frequent Itemset Mining Dataset Repository</a
+          >. This dataset includes 100,000 transactions with an average size of
+          10 items. The average size of maximal potential frequent item sets is
+          4.
+        </p>
+      </section>
+      <section id="Results">
+        <h1>Results</h1>
+        <img src="public/paper_graph.png" />
+        <p>
+          This graph shows that AprioriHybrid scales better than Apriori, and
+          multithreaded AprioriHybrid version is some multiple times faster than
+          AprioriHybrid. This factor is less than 8 due to the time spent on the
+          main thread instead of multiple threads. The multithreaded version is
+          slower at smaller scales due to how I combine the counts in the main
+          thread. I found five frequent itemsets of length 10 at a minimum
+          support count of 0.05%. They are:
+        </p>
+        <ul>
+          <li>126 158 193 214 332 561 682 833 843 998</li>
+          <li>8 71 75 108 242 438 486 684 766 958</li>
+          <li>42 147 196 269 464 515 820 823 922 975</li>
+          <li>75 205 207 285 403 461 529 829 896 950</li>
+          <li>116 381 492 523 632 706 777 778 865 893</li>
+        </ul>
+      </section>
+      <section id="Discussion">
+        <h1>Discussion</h1>
+        <p>
+          My AprioriHybrid implementation scales better than my Apriori
+          implementation as shown in the results section. This is due to not
+          having to count each combination in the transaction for AprioriTID,
+          which grows combinatorically large. The multithreaded version suffers
+          from having to combine the counts of candidate item sets and needing a
+          main thread to do that. This means that the main thread takes up
+          almost half the computing time, which would not be solved by adding
+          more threads. My implementation also requires a parameter to define
+          when it should switch to using AprioriTID. This means the user would
+          have to determine the best pass to switch to get the most performance.
+          A potential fix is to use heuristics to determine when to switch.
+          Following that idea, I could use heuristics to figure out which
+          transactions could switch to TID and which transactions should stay to
+          using Apriori.
+        </p>
+        <p>
+          Another performance hit is the use of a hash tree for counting,
+          especially in lower passes. The hash tree is very small at lower
+          passes, causing the leaf nodes to contain too many candidate item
+          sets. This leads to many expensive array comparisons. A potential fix
+          is to use a trie to store the counts, taking advantage of the fast
+          indexing and no array comparisons. Another problem is the large amount
+          of memory the TIDs take up. There are not any major fixes I can think
+          of except to use a more efficient data structure than a hash set. A
+          bottleneck can occur when some threads are idle and other threads are
+          still counting can occur due to the partitioning. A potential fix is
+          to use a thread pool where each thread picks the next transaction to
+          count and continues doing that. The other bottleneck is the main
+          thread combining all the item set counts and filtering them. Lastly,
+          the counting of every candidate item set causes Apriori-like
+          algorithms to be slow on low passes like 3 and 4. My implementation
+          spends half the time doing pass 3 for a support count of 0.05%.
+        </p>
+        <p>
+          One future plan is to parallelize this algorithm, so that it could
+          work with multiple processors. This allows it to run on bigger
+          machines that could run the algorithm much faster than with one
+          processor. One part of the algorithm I would need to change is the
+          work the main processor does. Another plan could be to use a prefix
+          tree, or trie, to do the counting instead of a hash tree. "A fast
+          APRIORI implementation" by Ferenc Bodon shows how that would be
+          implemented.
+        </p>
+      </section>
+      <section id="src">
+        <h1>Source Code</h1>
+        <section class="toc">
+          <h2>Table of Contents</h2>
+          <ul>
+            <li>
+              <a href="#transaction-set">Transaction Set</a>
+            </li>
+            <li>
+              <a href="#candidates">Candidates</a>
+            </li>
+            <li>
+              <a href="#hashtree">Hash Tree</a>
+            </li>
+            <li>
+              <a href="#2darray">2D Array</a>
+            </li>
+            <li>
+              <a href="#join">Join</a>
+            </li>
+            <li>
+              <a href="#nestedloops">Nested Loops</a>
+            </li>
+            <li>
+              <a href="#apriori">Apriori</a>
+            </li>
+            <li>
+              <a href="#tids">Transaction TIDs</a>
+            </li>
+            <li>
+              <a href="#aprioritid">AprioriTID</a>
+            </li>
+            <li>
+              <a href="#multithread-apriorihybrid"
+                >Mulithreaded AprioriHybrid</a
+              >
+            </li>
+            <li>
+              <a href="#thread-apriorihybrid">Thread of AprioriHybrid</a>
+            </li>
+          </ul>
+        </section>
+        <p>
+          I wrote a lot of source code for this project using only the standard
+          library and a command line parsing library for the commands. This is
+          all implemented in the Rust language. The GitHub repository is
+          <a href="https://github.com/Striker2783/data_mining/tree/presentation"
+            >https://github.com/Striker2783/data_mining/tree/presentation</a
+          >.
+        </p>
+        <h2 id="transaction-set">Transaction Set</h2>
+        <pre><code class="language-rust">
 use std::{fs::File, io::{BufRead, BufReader}, ops::{Deref, DerefMut}};
 /// A 0-indexed item set
 /// A Transactional Database
@@ -349,8 +349,8 @@ impl TransactionSet {
     }
 }
                 </code></pre>
-				<h2 id="candidates">Candidates</h2>
-				<pre>
+        <h2 id="candidates">Candidates</h2>
+        <pre>
                     <code class="language-rust">
 use std::{collections::{HashMap, HashSet}, ops::{Deref, DerefMut}};
 pub type CandidateType = HashSet&Vec&usize>>;
@@ -384,8 +384,8 @@ impl From&CandidateType> for Candidates {
 }
                     </code>
                 </pre>
-				<h2 id="hashtree">Hash Tree</h2>
-				<pre>
+        <h2 id="hashtree">Hash Tree</h2>
+        <pre>
                     <code class="language-rust">
 use std::{
     hash::{DefaultHasher, Hash, Hasher},
@@ -778,8 +778,8 @@ impl&lt;const N: usize> TransactionIdCounts for AprioriHashTreeGeneric&lt;N> {
 
                     </code>
                 </pre>
-				<h2 id="2darray">2D Array</h2>
-				<pre><code class="language-rust">
+        <h2 id="2darray">2D Array</h2>
+        <pre><code class="language-rust">
 /// A lower triangle 2D square matrix in the form of a 1D array.
 #[derive(Debug, Default)]
 pub struct Array2D&lt;T>(Vec&lt;T>);
@@ -873,8 +873,8 @@ impl&lt;T: Copy> Iterator for Array2DIterator&lt;'_, T> {
     }
 }
 </code></pre>
-				<h2 id="join">Join</h2>
-				<pre><code class="language-rust">
+        <h2 id="join">Join</h2>
+        <pre><code class="language-rust">
 use std::collections::HashMap;
 /// Joins together the itemsets for Apriori
 pub fn join<'a, T: FnMut(Vec&lt;usize>), U: Iterator&lt;Item = &'a Vec&lt;usize>>>(
@@ -911,8 +911,8 @@ pub fn join<'a, T: FnMut(Vec&lt;usize>), U: Iterator&lt;Item = &'a Vec&lt;usize>
     }
 }
 </code></pre>
-				<h2 id="nestedloops">Nested Loops</h2>
-				<pre><code class="language-rust">
+        <h2 id="nestedloops">Nested Loops</h2>
+        <pre><code class="language-rust">
 /// A nested loop function that loops through the data, sending an array of k size to the function
 pub fn nested_loops&lt;T: FnMut(&[usize])>(mut f: T, data: &[usize], k: usize) {
     let mut stack = vec![0; k];
@@ -939,8 +939,8 @@ fn nested_loops_helper&lt;T: FnMut(&[usize])>(
     }
 }
 </code></pre>
-				<h2 id="apriori">Apriori</h2>
-				<pre><code class="language-rust">
+        <h2 id="apriori">Apriori</h2>
+        <pre><code class="language-rust">
 use std::ops::Deref;
 
 use datasets::{transaction_set::TransactionSet, utils::nested_loops};
@@ -1115,8 +1115,8 @@ pub fn apriori_run_two(d: &TransactionSet, min_sup: u64) -> Candidates {
     v
 }
 </code></pre>
-				<h2 id="tids">Transaction IDs</h2>
-				<pre><code class="language-rust">
+        <h2 id="tids">Transaction IDs</h2>
+        <pre><code class="language-rust">
 use std::collections::{HashMap, HashSet};
 
 use datasets::{transaction_set::TransactionSet, utils::nested_loops};
@@ -1258,8 +1258,8 @@ impl TransactionIdCounts for HashMap&lt;Vec&lt;usize>, u64> {
     }
 }
 </code></pre>
-				<h2 id="aprioritid">AprioriTID</h2>
-				<pre><code class="language-rust">
+        <h2 id="aprioritid">AprioriTID</h2>
+        <pre><code class="language-rust">
 use std::ops::{Deref, DerefMut};
 
 use datasets::transaction_set::TransactionSet;
@@ -1333,8 +1333,8 @@ impl&lt;'a> AprioriTiDCandidates&lt;'a> {
     }
 }
 </code></pre>
-				<h2 id="multithread-apriorihybrid">Multithreaded AprioriHybrid</h2>
-				<pre><code class="language-rust">
+        <h2 id="multithread-apriorihybrid">Multithreaded AprioriHybrid</h2>
+        <pre><code class="language-rust">
 use std::{
     sync::{Arc, Mutex},
     thread,
@@ -1439,8 +1439,8 @@ impl&lt;'a> CountDistributionHybrid&lt;'a> {
     }
 }
 </code></pre>
-				<h2 id="thread-apriorihybrid">Thread of AprioriHybrid</h2>
-				<pre><code class="language-rust">
+        <h2 id="thread-apriorihybrid">Thread of AprioriHybrid</h2>
+        <pre><code class="language-rust">
 use std::ops::Deref;
 
 use apriori::{
@@ -1505,69 +1505,69 @@ impl CDProcessHybrid {
     }
 }
             </code></pre>
-			</section>
-		</article>
-	</body>
-	<style>
-		p {
-			font-size: 20px;
-			text-indent: 2em;
-		}
-		h1 {
-			font-size: 2em;
-		}
-		.math-inline {
-			font-family: "Georgia", "Times New Roman", serif;
-			font-style: italic;
-			background-color: #f2f2f2;
-			padding: 2px 6px;
-			border-radius: 4px;
-			color: #333;
-			white-space: nowrap;
-		}
-		.toc {
-			max-width: 400px;
-			margin: 2em auto;
-			padding: 1em 1.5em;
-			background-color: #f9f9f9;
-			border: 1px solid #ddd;
-			border-radius: 8px;
-			font-family: "Segoe UI", sans-serif;
-		}
+      </section>
+    </article>
+  </body>
+  <style>
+    p {
+      font-size: 20px;
+      text-indent: 2em;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    .math-inline {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-style: italic;
+      background-color: #f2f2f2;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #333;
+      white-space: nowrap;
+    }
+    .toc {
+      max-width: 400px;
+      margin: 2em auto;
+      padding: 1em 1.5em;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: "Segoe UI", sans-serif;
+    }
 
-		.toc h2 {
-			margin-top: 0;
-			font-size: 1.3em;
-			border-bottom: 2px solid #ccc;
-			padding-bottom: 0.3em;
-			color: #444;
-		}
+    .toc h2 {
+      margin-top: 0;
+      font-size: 1.3em;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.3em;
+      color: #444;
+    }
 
-		.toc ul {
-			list-style: none;
-			padding-left: 0;
-			margin: 0;
-		}
+    .toc ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
 
-		.toc li {
-			margin: 0.5em 0;
-		}
+    .toc li {
+      margin: 0.5em 0;
+    }
 
-		.toc a {
-			text-decoration: none;
-			color: #3366cc;
-			transition: color 0.2s ease-in-out;
-		}
+    .toc a {
+      text-decoration: none;
+      color: #3366cc;
+      transition: color 0.2s ease-in-out;
+    }
 
-		.toc a:hover {
-			color: #1a4d99;
-			text-decoration: underline;
-		}
+    .toc a:hover {
+      color: #1a4d99;
+      text-decoration: underline;
+    }
 
-		.toc li ul {
-			margin-top: 0.3em;
-			padding-left: 1.2em;
-			font-size: 0.95em;
-		}
-	</style>
+    .toc li ul {
+      margin-top: 0.3em;
+      padding-left: 1.2em;
+      font-size: 0.95em;
+    }
+  </style>
 </html>

@@ -1,83 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <head lang="en">
-	<title>Discord Bot</title>
-	<link rel="stylesheet" href="/index.css" />
-	<script src="/components/nav-bar.js"></script>
+  <title>Discord Bot</title>
+  <link rel="stylesheet" href="/index.css" />
+  <script src="/components/nav-bar.js"></script>
 </head>
 
 <body>
-	<nav-bar />
-	<main>
-		<h1>Discord Bot</h1>
-		<article>
-			<section>
-				Link to the server with the bot in it:
-				<a href="https://discord.gg/CM4FBsf">Discord</a>
-				<h1>Introduction</h1>
-				<p>
-					I made this bot to help me moderate our Discord server that currently
-					has over 10,000 members in it. I also wanted to reduce the number of
-					bots in our server to reduce the security vulnerabilities that the
-					bots could pose if they get malicious. I have this bot running on my
-					Raspberry PI 3 at home. I will keep add more features to it when it is
-					useful for me to.
-				</p>
-			</section>
-			<section>
-				<h1>Features</h1>
-				<ul>
-					<li>
-						<b>Filtering</b>: filters user messages based on what they sent.
-						This may also warn the user.
-					</li>
-					<li>
-						<b>Warning System</b>: made a warning system that keeps count of the
-						warnings a user has and gives punishment based on it.
-					</li>
-					<li>
-						<b>Track Number of Members</b>: automatically updates channels'
-						names based on how many members are in the server. I made this
-						feature to replace the Server Stats Discord Bot.
-					</li>
-					<li>
-						<b>Welcomes and Goodbyes Users</b>: automatically sends a short
-						message whenever someone leaves or joins the server. This features
-						was used to replace the Welcomer bot. It also automatically adds a
-						Member role whenever someone joins.
-					</li>
-					<li>
-						<b>Commands</b>: allows admins to run commands to warn users, delete
-						messages, and other things. This is mainly for convenience for me.
-					</li>
-				</ul>
-			</section>
-			<section>
-				<h1>Tools</h1>
-				<ul>
-					<li>Discord JS</li>
-					<li>SQLite</li>
-					<li>Typescript</li>
-					<li>NodeJS with PM2</li>
-				</ul>
-			</section>
-			<section>
-				<h1>Screenshots</h1>
-				<h2>Filtering</h2>
-				<video autoplay loop muted playsinline>
-					<source src="./public/moderation.webm" type="video/webm">
-					Your browser does not support the video tag.
-				</video>
-				<h2>Warnings</h2>
-				<img src="./public/warnings.png" alt="Warnings" />
-				<h2>Server Stats</h2>
-				<img src="./public/stats.png" alt="Server Stats" />
-				<h2>Welcomer and Goodbye Messages</h2>
-				<img src="./public/welcome.png" alt="Welcome" />
-				<img src="./public/goodbye.png" alt="Goodbye" />
-				<h2>Commands</h2>
-				<img src="./public/commands.png" alt="Commands" />
-			</section>
-		</article>
-	</main>
+  <nav-bar />
+  <main>
+    <h1>Discord Bot</h1>
+    <article>
+      <section>
+        Link to the server with the bot in it:
+        <a href="https://discord.gg/CM4FBsf">Discord</a>
+        <h1>Introduction</h1>
+        <p>
+          I made this bot to help me moderate our Discord server that currently
+          has over 10,000 members in it. I also wanted to reduce the number of
+          bots in our server to reduce the security vulnerabilities that the
+          bots could pose if they get malicious. I have this bot running on my
+          Raspberry PI 3 at home. I will keep add more features to it when it is
+          useful for me to.
+        </p>
+      </section>
+      <section>
+        <h1>Features</h1>
+        <ul>
+          <li>
+            <b>Filtering</b>: filters user messages based on what they sent.
+            This may also warn the user.
+          </li>
+          <li>
+            <b>Warning System</b>: made a warning system that keeps count of the
+            warnings a user has and gives punishment based on it.
+          </li>
+          <li>
+            <b>Track Number of Members</b>: automatically updates channels'
+            names based on how many members are in the server. I made this
+            feature to replace the Server Stats Discord Bot.
+          </li>
+          <li>
+            <b>Welcomes and Goodbyes Users</b>: automatically sends a short
+            message whenever someone leaves or joins the server. This features
+            was used to replace the Welcomer bot. It also automatically adds a
+            Member role whenever someone joins.
+          </li>
+          <li>
+            <b>Commands</b>: allows admins to run commands to warn users, delete
+            messages, and other things. This is mainly for convenience for me.
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h1>Tools</h1>
+        <ul>
+          <li>Discord JS</li>
+          <li>SQLite</li>
+          <li>Typescript</li>
+          <li>NodeJS with PM2</li>
+        </ul>
+      </section>
+      <section>
+        <h1>Screenshots</h1>
+        <h2>Filtering</h2>
+        <video autoplay loop muted playsinline>
+          <source src="./public/moderation.webm" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+        <h2>Warnings</h2>
+        <img src="./public/warnings.png" alt="Warnings" />
+        <h2>Server Stats</h2>
+        <img src="./public/stats.png" alt="Server Stats" />
+        <h2>Welcomer and Goodbye Messages</h2>
+        <img src="./public/welcome.png" alt="Welcome" />
+        <img src="./public/goodbye.png" alt="Goodbye" />
+        <h2>Commands</h2>
+        <img src="./public/commands.png" alt="Commands" />
+      </section>
+    </article>
+  </main>
 </body>
